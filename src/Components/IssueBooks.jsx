@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { data } from 'react-router-dom';
 
 function IssueBooks() {
   const [formData, setFormData] = useState({
@@ -12,7 +13,7 @@ function IssueBooks() {
   const [isLoading, setIsLoading] = useState(false);
   const [issuedBooks, setIssuedBooks] = useState([]);
   const [allIssuedBooks, setAllIssuedBooks] = useState([]);
-  const [searchEmail, setSearchEmail] = useState('');
+  const [search, setSearch] = useState('');
 
   const [bookTitles, setBookTitles] = useState([]); 
   useEffect(() => {
@@ -38,11 +39,11 @@ function IssueBooks() {
 
   // Handle email search
   useEffect(() => {
-    if (searchEmail.trim() === "") {
+    if (search.trim() === "") {
       setIssuedBooks(allIssuedBooks);
-    } else {
+    } else if(search.trim() !== "") {
       // Filter issued books by email
-      fetch(`http://localhost:8080/api/IssueBook/searchUser?Email=${searchEmail.toLowerCase()}`)
+      fetch(`http://localhost:8080/api/IssueBook/searchUser?Name=${search.toLowerCase()}`)
         .then(res => res.json())
         .then(data => {
           setIssuedBooks(data);
@@ -51,7 +52,7 @@ function IssueBooks() {
           alert("Server error while searching issued books");
         });
     }
-  }, [searchEmail, allIssuedBooks]);
+  }, [search]);
 
 
  
@@ -129,11 +130,9 @@ function IssueBooks() {
 
         if(res.status!==200){
           try{
-            data=res.json();
+            data= await res.json();
             alert(data?.message);
-          }catch{
-            alert("Error issuing book");
-          }
+          }catch{}
         }
         if(res.ok){
           alert("Book issued successfully");  
@@ -142,11 +141,6 @@ function IssueBooks() {
        .catch(() => {
         alert("Server error while issuing book");
        });     
-
-      setSuccessMessage(
-        `Book "${formData.bookTitle}" issued to ${formData.studentEmail}`
-      );
-
       // Reset form
       setFormData({
         studentEmail: '',
@@ -159,6 +153,49 @@ function IssueBooks() {
         setSuccessMessage('');
       }, 4000);
     }, 1000);
+  };
+
+  // Delete a single issued book
+  const handleDelete = (issueId) => {
+    if (!window.confirm('Are you sure you want to delete this issued book?')) return;
+    fetch(`http://localhost:8080/api/IssueBook/delete/${issueId}`, {
+      method: 'DELETE',
+    })
+      .then(async (res) => {
+        let data=null;
+
+        if (res.ok) {
+          setIssuedBooks((prev) => prev.filter((book) => book.issueId !== issueId));
+          setAllIssuedBooks((prev) => prev.filter((book) => book.issueId !== issueId));
+        } else {
+          data=await res.json();
+          alert(data?.message);
+        }
+      })
+      .catch(() => {
+        alert('Server error while deleting issued book.');
+      });
+  };
+
+  // Delete all issued books
+  const handleDeleteAll = () => {
+    if (!window.confirm('Are you sure you want to delete ALL issued books? This action cannot be undone.')) return;
+    fetch('http://localhost:8080/api/IssueBook/deleteAllIssueDatas', {
+      method: 'DELETE',
+    })
+      .then(async (res) => {
+        let data = null;
+        if (res.ok) {
+          setIssuedBooks([]);
+          setAllIssuedBooks([]);
+        } else {
+          data=await res.json();
+          alert(data?.message);
+        }
+      })
+      .catch(() => {
+        alert('Server error while deleting all issued books.');
+      });
   };
 
   return (
@@ -291,12 +328,22 @@ function IssueBooks() {
         <input
           type="search"
           placeholder="Search by student email..."
-          value={searchEmail}
-          onChange={(e) => setSearchEmail(e.target.value)}
+          value={search.trim()}
+          onChange={(e) => setSearch(e.target.value)}
           className="w-full border-2 border-gray-300 rounded-lg py-2 px-4 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-100 text-sm md:text-base"
         />
       </div>
 
+      <div className="flex justify-end mb-2">
+        {issuedBooks.length > 0 && (
+          <button
+            onClick={handleDeleteAll}
+            className="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg text-sm md:text-base shadow"
+          >
+            Delete All
+          </button>
+        )}
+      </div>
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="px-4 md:px-6 py-4 border-b-2 border-gray-200 bg-teal-50">
           <h2 className="text-lg md:text-xl font-bold text-gray-800">📋 All Issued Books</h2>
@@ -313,6 +360,9 @@ function IssueBooks() {
                 <thead className="bg-gray-50 border-b-2 border-gray-200">
                   <tr>
                     <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">
+                      IssueBook ID
+                    </th>
+                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">
                       Student Name
                     </th>
                     <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">
@@ -327,11 +377,15 @@ function IssueBooks() {
                     <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">
                       Status
                     </th>
+                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">
+                      Action
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {issuedBooks.map((book) => (
                     <tr key={book.issueId} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 md:px-6 py-4 text-gray-700 text-sm">{book.issueId}</td>
                       <td className="px-4 md:px-6 py-4 text-gray-800 font-medium text-sm">
                         {book.studentName}
                       </td>
@@ -342,6 +396,14 @@ function IssueBooks() {
                         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
                           {book.status}
                         </span>
+                      </td>
+                      <td className="px-4 md:px-6 py-4">
+                        <button
+                          onClick={() => handleDelete(book.issueId)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold"
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -354,6 +416,10 @@ function IssueBooks() {
               {issuedBooks.map((book) => (
                 <div key={book.issueId} className="p-4 hover:bg-gray-50 transition-colors">
                   <div className="space-y-2">
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase">IssueBook ID</p>
+                      <p className="text-sm text-gray-700">{book.issueId}</p>
+                    </div>
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="text-xs font-semibold text-gray-600 uppercase">Student</p>
@@ -377,6 +443,14 @@ function IssueBooks() {
                         <p className="text-sm text-gray-700">{book.dueDate}</p>
                       </div>
                     </div>
+                    <div className="flex justify-end mt-2">
+                      <button
+                        onClick={() => handleDelete(book.issueId)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-semibold"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -385,7 +459,7 @@ function IssueBooks() {
         ) : (
           <div className="p-6 md:p-8 text-center">
             <p className="text-gray-600 text-base md:text-lg">
-              {searchEmail
+              {search
                 ? '📌 No issued books found matching this email'
                 : '📭 No books issued yet'}
             </p>

@@ -1,32 +1,93 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function ReturnBooks() {
+  const [searchStudent, setSearchStudent] = useState("");
   const [formData, setFormData] = useState({
-    studentEmail: '',
+    issueId: '',
     bookTitle: '',
     returnDate: new Date().toISOString().split('T')[0],
   });
 
   const [errors, setErrors] = useState({});
-  const [successData, setSuccessData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [returnedBooks, setReturnedBooks] = useState([]);
+  const [allReturnedBooks, setAllReturnedBooks] = useState([]);
 
-  const bookTitles = [
-    'Java Basics',
-    'Spring Boot',
-    'DB Design',
-    'Python Essentials',
-    'Web Development',
-  ];
+  // Delete a single returned book
+  const handleDelete = (returnId) => {
+    if (!window.confirm('Are you sure you want to delete this return?')) return;
+    fetch(`http://localhost:8080/api/returnBook/delete/${returnId}`, {
+      method: 'DELETE',
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Delete failed');
+        // Remove from UI
+        setReturnedBooks((prev) => prev.filter((b) => b.returnId !== returnId));
+        setAllReturnedBooks((prev) => prev.filter((b) => b.returnId !== returnId));
+      })
+      .catch(() => alert('Server error while deleting return'));
+  };
+
+  // Delete all returned books
+  const handleDeleteAll = () => {
+    if (!window.confirm('Are you sure you want to delete ALL returns?')) return;
+    fetch('http://localhost:8080/api/returnBook/deleteAll', {
+      method: 'DELETE',
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error('Delete all failed');
+        setReturnedBooks([]);
+        setAllReturnedBooks([]);
+      })
+      .catch(() => alert('Server error while deleting all returns'));
+  };
+  const [bookTitles, setBookTitles] = useState([]);
+  
+  useEffect(()=> {
+    fetch("http://localhost:8080/api/book/getAllBooks")
+      .then((res) => res.json())
+      .then((data) => {
+        setBookTitles(data);
+      })
+      .catch(() => {
+        alert("Server error while fetching books");
+      })
+
+    fetch("http://localhost:8080/api/returnBook/AllReturnedBooks")
+      .then((res) => res.json())
+      .then((data) => {
+        setAllReturnedBooks(data);
+        setReturnedBooks(data);
+        // Filter returned books by student name
+        
+      })
+      .catch(() => {
+        alert("Server error while fetching returned books");
+      })  
+    }, []);
+    useEffect(() => {
+          if (!searchStudent) {
+            setReturnedBooks(allReturnedBooks);
+          } else {
+            fetch(`http://localhost:8080/api/returnBook/Search?name=${searchStudent.toLocaleLowerCase()}`)
+              .then((res) => res.json())
+              .then((data) => {
+                setReturnedBooks(data);
+                console.log(returnedBooks)
+              })
+              .catch(() => {
+                alert("Server error while searching returned books");
+              });
+          }
+    }, [searchStudent]);
 
   const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.studentEmail.trim()) {
-      newErrors.studentEmail = 'Student email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.studentEmail)) {
-      newErrors.studentEmail = 'Please enter a valid email';
+    if (!formData.issueId.trim()) {
+      newErrors.issueId = 'Issue ID is required';
+    } else if (!/^\d+$/.test(formData.issueId.trim())) {
+      newErrors.issueId = 'Issue ID must be a number';
     }
 
     if (!formData.bookTitle.trim()) {
@@ -74,39 +135,38 @@ function ReturnBooks() {
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
-      const fine = calculateFine();
-      const studentName = formData.studentEmail.split('@')[0];
-
       const newReturnedBook = {
-        id: Date.now(),
-        studentName,
-        studentEmail: formData.studentEmail,
+        issueId: formData.issueId,
         bookTitle: formData.bookTitle,
-        returnDate: formData.returnDate,
-        fineAmount: fine,
-        status: 'RETURNED',
+        returnDate: formData.returnDate
       };
 
-      setReturnedBooks((prev) => [newReturnedBook, ...prev]);
-
-      setSuccessData({
-        bookTitle: formData.bookTitle,
-        studentEmail: formData.studentEmail,
-        returnDate: formData.returnDate,
-        fineAmount: fine,
-      });
+      fetch("http://localhost:8080/api/returnBook/userReturnBook", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },    
+        body: JSON.stringify(newReturnedBook)
+      })
+      .then((res) => res.json())
+      .then((data) => {
+        setReturnedBooks(data)
+        setAllReturnedBooks(data)
+      })
+      .catch(() => {
+        alert("Server error while returning book");
+      })
+    
 
       // Reset form
       setFormData({
-        studentEmail: '',
+        issueId: '',
         bookTitle: '',
         returnDate: new Date().toISOString().split('T')[0],
       });
 
       // Auto-dismiss after 5 seconds
-      setTimeout(() => {
-        setSuccessData(null);
-      }, 5000);
+     
     }, 1000);
   };
 
@@ -120,51 +180,28 @@ function ReturnBooks() {
 
       {/* Form Container */}
       <div className="bg-white rounded-lg shadow-sm p-4 md:p-8 mb-6 md:mb-8">
-        {/* Success Message with Fine Details */}
-        {successData && (
-          <div className="mb-6 p-4 md:p-6 bg-green-50 border-l-4 border-green-600 rounded-lg">
-            <p className="text-green-700 font-semibold text-sm md:text-base mb-3">
-              ✓ Book "{successData.bookTitle}" returned successfully
-            </p>
-            <div className="bg-white rounded p-3 md:p-4 space-y-2">
-              <div className="flex flex-col md:flex-row md:justify-between text-gray-700 text-sm">
-                <span>Student Email:</span>
-                <span className="font-semibold text-xs md:text-base break-all">{successData.studentEmail}</span>
-              </div>
-              <div className="flex flex-col md:flex-row md:justify-between text-gray-700 text-sm">
-                <span>Return Date:</span>
-                <span className="font-semibold">{successData.returnDate}</span>
-              </div>
-              <div className="flex flex-col md:flex-row md:justify-between text-base md:text-lg font-bold pt-2 border-t border-gray-300">
-                <span>Fine Amount:</span>
-                <span className={successData.fineAmount > 0 ? 'text-orange-600' : 'text-green-600'}>
-                  ${successData.fineAmount.toFixed(2)}
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
+        
 
         <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-          {/* Student Email Field */}
+          {/* Issue ID Field */}
           <div>
             <label className="block text-xs md:text-sm font-semibold text-gray-700 mb-2">
-              Student Email <span className="text-red-500">*</span>
+              Issue ID <span className="text-red-500">*</span>
             </label>
             <input
-              type="email"
-              name="studentEmail"
-              value={formData.studentEmail}
+              type="text"
+              name="issueId"
+              value={formData.issueId}
               onChange={handleChange}
-              placeholder="student@example.com"
+              placeholder="Enter Issue ID"
               className={`w-full px-4 py-2 md:py-3 border-2 rounded-lg focus:outline-none transition-all text-sm md:text-base ${
-                errors.studentEmail
+                errors.issueId
                   ? 'border-red-500 focus:ring-2 focus:ring-red-200'
                   : 'border-gray-300 focus:border-teal-600 focus:ring-2 focus:ring-teal-100'
               }`}
             />
-            {errors.studentEmail && (
-              <p className="text-red-500 text-xs md:text-sm mt-1">❌ {errors.studentEmail}</p>
+            {errors.issueId && (
+              <p className="text-red-500 text-xs md:text-sm mt-1">❌ {errors.issueId}</p>
             )}
           </div>
 
@@ -185,8 +222,8 @@ function ReturnBooks() {
             >
               <option value="">-- Select a Book --</option>
               {bookTitles.map((title) => (
-                <option key={title} value={title}>
-                  {title}
+                <option key={title.bookId} value={title.bookTitle}>
+                  {title.bookTitle}
                 </option>
               ))}
             </select>
@@ -253,13 +290,32 @@ function ReturnBooks() {
         </form>
       </div>
 
+
       {/* Returned Books Table */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="px-4 md:px-6 py-4 border-b-2 border-gray-200 bg-teal-50">
-          <h2 className="text-lg md:text-xl font-bold text-gray-800">📋 All Returned Books</h2>
-          <p className="text-gray-600 text-xs md:text-sm mt-1">
-            {returnedBooks.length} book{returnedBooks.length !== 1 ? 's' : ''} returned
-          </p>
+        <div className="px-4 md:px-6 py-4 border-b-2 border-gray-200 bg-teal-50 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 className="text-lg md:text-xl font-bold text-gray-800">📋 All Returned Books</h2>
+            <p className="text-gray-600 text-xs md:text-sm mt-1">
+              {returnedBooks.length} book{returnedBooks.length !== 1 ? 's' : ''} returned
+            </p>
+          </div>
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <input
+              type="text"
+              placeholder="Search by Student Name..."
+              value={searchStudent}
+              onChange={e => setSearchStudent(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-200"
+            />
+            <button
+              onClick={handleDeleteAll}
+              className="bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg text-xs md:text-sm"
+              disabled={returnedBooks.length === 0}
+            >
+              🗑️ Delete All
+            </button>
+          </div>
         </div>
 
         {returnedBooks.length > 0 ? (
@@ -269,42 +325,37 @@ function ReturnBooks() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b-2 border-gray-200">
                   <tr>
-                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">
-                      Student Name
-                    </th>
-                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">
-                      Book Title
-                    </th>
-                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">
-                      Return Date
-                    </th>
-                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">
-                      Fine Amount
-                    </th>
-                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">
-                      Status
-                    </th>
+                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">Return ID</th>
+                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">Issue ID</th>
+                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">Student Name</th>
+                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">Book Title</th>
+                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">Return Date</th>
+                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">Fine Amount</th>
+                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">Status</th>
+                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {returnedBooks.map((book) => (
-                    <tr key={book.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 md:px-6 py-4 text-gray-800 font-medium text-sm">
-                        {book.studentName}
-                      </td>
+                    <tr key={book.returnId} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 md:px-6 py-4 text-gray-700 text-sm">{book.returnId}</td>
+                      <td className="px-4 md:px-6 py-4 text-gray-700 text-sm">{book.issueId}</td>
+                      <td className="px-4 md:px-6 py-4 text-gray-700 text-sm">{book.studentName}</td>
                       <td className="px-4 md:px-6 py-4 text-gray-700 text-sm">{book.bookTitle}</td>
                       <td className="px-4 md:px-6 py-4 text-gray-700 text-sm">{book.returnDate}</td>
                       <td className="px-4 md:px-6 py-4">
-                        <span className={`font-semibold text-sm ${
-                          book.fineAmount > 0 ? 'text-orange-600' : 'text-green-600'
-                        }`}>
-                          ${book.fineAmount.toFixed(2)}
-                        </span>
+                        <span className={`font-semibold text-sm ${book.fineAmount > 0 ? 'text-orange-600' : 'text-green-600'}`}>${book.fineAmount?.toFixed(2) ?? '0.00'}</span>
                       </td>
                       <td className="px-4 md:px-6 py-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">
-                          {book.status}
-                        </span>
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">{book.status}</span>
+                      </td>
+                      <td className="px-4 md:px-6 py-4">
+                        <button
+                          onClick={() => handleDelete(book.returnId)}
+                          className="bg-red-500 hover:bg-red-600 text-white font-semibold px-3 py-1 rounded text-xs"
+                        >
+                          Delete
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -315,16 +366,19 @@ function ReturnBooks() {
             {/* Mobile Card View */}
             <div className="md:hidden divide-y divide-gray-200">
               {returnedBooks.map((book) => (
-                <div key={book.id} className="p-4 hover:bg-gray-50 transition-colors">
+                <div key={book.returnId} className="p-4 hover:bg-gray-50 transition-colors">
                   <div className="space-y-2">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-xs font-semibold text-gray-600 uppercase">Student</p>
-                        <p className="text-sm font-medium text-gray-800">{book.studentName}</p>
-                      </div>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">
-                        {book.status}
-                      </span>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase">Return ID</p>
+                      <p className="text-sm text-gray-700">{book.returnId}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase">Issue ID</p>
+                      <p className="text-sm text-gray-700">{book.issueId}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 uppercase">Student</p>
+                      <p className="text-sm text-gray-700">{book.studentName}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-gray-600 uppercase">Book</p>
@@ -337,12 +391,19 @@ function ReturnBooks() {
                       </div>
                       <div>
                         <p className="text-xs font-semibold text-gray-600 uppercase">Fine</p>
-                        <p className={`text-sm font-semibold ${
-                          book.fineAmount > 0 ? 'text-orange-600' : 'text-green-600'
-                        }`}>
-                          ${book.fineAmount.toFixed(2)}
-                        </p>
+                        <p className={`text-sm font-semibold ${book.fineAmount > 0 ? 'text-orange-600' : 'text-green-600'}`}>${book.fineAmount?.toFixed(2) ?? '0.00'}</p>
                       </div>
+                    </div>
+                    <div>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">{book.status}</span>
+                    </div>
+                    <div>
+                      <button
+                        onClick={() => handleDelete(book.returnId)}
+                        className="mt-2 bg-red-500 hover:bg-red-600 text-white font-semibold px-3 py-1 rounded text-xs"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>
