@@ -253,11 +253,7 @@ function ReturnBooks() {
             )}
           </div>
 
-          {/* Status Info (Auto-set) */}
-          <div className="bg-green-50 p-3 md:p-4 rounded-lg border-l-4 border-green-600">
-            <p className="text-xs md:text-sm font-semibold text-green-700">Status</p>
-            <p className="text-green-600 text-xs md:text-sm mt-1">Status will be automatically set to: <span className="font-bold">RETURNED</span></p>
-          </div>
+          
 
           {/* Submit Button - Stack on Mobile */}
           <div className="flex flex-col md:flex-row gap-2 pt-2 md:pt-4">
@@ -331,7 +327,6 @@ function ReturnBooks() {
                     <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">Book Title</th>
                     <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">Return Date</th>
                     <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">Fine Amount</th>
-                    <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">Status</th>
                     <th className="text-left px-4 md:px-6 py-3 font-semibold text-gray-700 text-sm">Action</th>
                   </tr>
                 </thead>
@@ -345,9 +340,6 @@ function ReturnBooks() {
                       <td className="px-4 md:px-6 py-4 text-gray-700 text-sm">{book.returnDate}</td>
                       <td className="px-4 md:px-6 py-4">
                         <span className={`font-semibold text-sm ${book.fineAmount > 0 ? 'text-orange-600' : 'text-green-600'}`}>${book.fineAmount?.toFixed(2) ?? '0.00'}</span>
-                      </td>
-                      <td className="px-4 md:px-6 py-4">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">{book.status}</span>
                       </td>
                       <td className="px-4 md:px-6 py-4">
                         <button
@@ -393,9 +385,6 @@ function ReturnBooks() {
                         <p className="text-xs font-semibold text-gray-600 uppercase">Fine</p>
                         <p className={`text-sm font-semibold ${book.fineAmount > 0 ? 'text-orange-600' : 'text-green-600'}`}>${book.fineAmount?.toFixed(2) ?? '0.00'}</p>
                       </div>
-                    </div>
-                    <div>
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">{book.status}</span>
                     </div>
                     <div>
                       <button
