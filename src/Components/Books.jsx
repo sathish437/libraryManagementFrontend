@@ -6,7 +6,7 @@ function Books() {
   let [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   useEffect(() => {
-    fetch("http://librarymanagement-1-nqwf.onrender.com/api/book/getAllBooks")
+    fetch("https://librarymanagement-1-nqwf.onrender.com/api/book/getAllBooks")
       .then((res) => res.json())
       .then((data) => {
         setBooks(data);
@@ -15,14 +15,14 @@ function Books() {
 
   useEffect(() => {
     if (searchTerm.trim() === "") {
-      fetch("http://librarymanagement-1-nqwf.onrender.com/api/book/getAllBooks")
+      fetch("https://librarymanagement-1-nqwf.onrender.com/api/book/getAllBooks")
         .then((res) => res.json())
         .then((data) => {
           setBooks(data);
         });
     } else {
       fetch(
-        `http://librarymanagement-1-nqwf.onrender.com/api/book/searchBooks?bookTitle=${searchTerm.toLowerCase()}`,
+        `https://librarymanagement-1-nqwf.onrender.com/api/book/searchBooks?bookTitle=${searchTerm.toLowerCase()}`,
       )
         .then((res) => res.json())
         .then((data) => {
@@ -32,7 +32,7 @@ function Books() {
   }, [searchTerm]);
 
   const handleDelete = (id) => {
-    fetch(`http://librarymanagement-1-nqwf.onrender.com/api/book/Delete/${id}`, {
+    fetch(`https://librarymanagement-1-nqwf.onrender.com/api/book/Delete/${id}`, {
       method: "DELETE",
     })
     .then(async (res) => {
@@ -56,7 +56,7 @@ function Books() {
   };
 
   const handleDeleteAll = () => {
-    fetch("http://librarymanagement-1-nqwf.onrender.com/api/book/DeleteAll", {
+    fetch("https://librarymanagement-1-nqwf.onrender.com/api/book/DeleteAll", {
       method: "DELETE",
     })
     .then(async (res) => {

@@ -106,7 +106,7 @@ function AddBookModal({ isOpen, onClose }) {
 
     if (isFormValid()) {
 
-    fetch("http://librarymanagement-1-nqwf.onrender.com/api/book/addBook",{
+    fetch("https://librarymanagement-1-nqwf.onrender.com/api/book/addBook",{
         method: "POST",
         headers: {
           "Content-Type": "application/json",

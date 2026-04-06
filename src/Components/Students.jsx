@@ -8,7 +8,7 @@ function Students() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    fetch("http://librarymanagement-1-nqwf.onrender.com/api/students/getStudents")
+    fetch("https://librarymanagement-1-nqwf.onrender.com/api/students/getStudents")
     .then((res)=>res.json())
     .then(data=>setStudents(data))
     .catch((error) => {
@@ -18,14 +18,14 @@ function Students() {
 
 useEffect(() => {
   if(searchTerm.trim()===""){
-    fetch("http://librarymanagement-1-nqwf.onrender.com/api/students/getStudents")
+    fetch("https://librarymanagement-1-nqwf.onrender.com/api/students/getStudents")
     .then((res)=>res.json())
     .then(data=>setStudents(data))
     .catch((error) => {
       alert("Server error");
     });
   }else{
-    fetch(`http://librarymanagement-1-nqwf.onrender.com/api/students/search?name=${searchTerm.toLowerCase()}`)
+    fetch(`https://librarymanagement-1-nqwf.onrender.com/api/students/search?name=${searchTerm.toLowerCase()}`)
     .then((res)=>res.json())
     .then(data=>setStudents(data))
     .catch((error) => {
@@ -35,7 +35,7 @@ useEffect(() => {
 }, [searchTerm]);
   
   const handleDelete = (id) => {
-    fetch(`http://librarymanagement-1-nqwf.onrender.com/api/students/delete/${id}`, {
+    fetch(`https://librarymanagement-1-nqwf.onrender.com/api/students/delete/${id}`, {
       method: "DELETE",
     })
     .then(async (res) => {
@@ -60,7 +60,7 @@ useEffect(() => {
   };
 
   const handleDeleteAll = () => {
-      fetch(`http://librarymanagement-1-nqwf.onrender.com/api/students/deleteAll`, {
+      fetch(`https://librarymanagement-1-nqwf.onrender.com/api/students/deleteAll`, {
       method: "DELETE",
     })
     .then(async (res) => {
