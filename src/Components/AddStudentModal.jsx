@@ -108,7 +108,7 @@ function AddStudentModal({ isOpen, onClose }) {
         department: formData.department,
       };
 
-      fetch(`http://localhost:8080/api/students/addStudent`,{
+      fetch(`http://librarymanagement-1-nqwf.onrender.com/api/students/addStudent`,{
         method: "POST",
         headers: {
           "Content-Type": "application/json",
