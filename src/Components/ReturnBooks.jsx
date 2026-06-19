@@ -16,7 +16,7 @@ function ReturnBooks() {
   // Delete a single returned book
   const handleDelete = (returnId) => {
     if (!window.confirm('Are you sure you want to delete this return?')) return;
-    fetch(`https://librarymanagement-1-nqwf.onrender.com/api/returnBook/delete/${returnId}`, {
+    fetch(`https://sathish5-librarysystem.hf.space/api/returnBook/delete/${returnId}`, {
       method: 'DELETE',
     })
       .then((res) => {
@@ -31,7 +31,7 @@ function ReturnBooks() {
   // Delete all returned books
   const handleDeleteAll = () => {
     if (!window.confirm('Are you sure you want to delete ALL returns?')) return;
-    fetch('https://librarymanagement-1-nqwf.onrender.com/api/returnBook/deleteAll', {
+    fetch('https://sathish5-librarysystem.hf.space/api/returnBook/deleteAll', {
       method: 'DELETE',
     })
       .then((res) => {
@@ -44,7 +44,7 @@ function ReturnBooks() {
   const [bookTitles, setBookTitles] = useState([]);
   
   useEffect(()=> {
-    fetch("https://librarymanagement-1-nqwf.onrender.com/api/book/getAllBooks")
+    fetch("https://sathish5-librarysystem.hf.space/api/book/getAllBooks")
       .then((res) => res.json())
       .then((data) => {
         setBookTitles(data);
@@ -53,7 +53,7 @@ function ReturnBooks() {
         alert("Server error while fetching books");
       })
 
-    fetch("https://librarymanagement-1-nqwf.onrender.com/api/returnBook/AllReturnedBooks")
+    fetch("https://sathish5-librarysystem.hf.space/api/returnBook/AllReturnedBooks")
       .then((res) => res.json())
       .then((data) => {
         setAllReturnedBooks(data);
@@ -69,7 +69,7 @@ function ReturnBooks() {
           if (!searchStudent) {
             setReturnedBooks(allReturnedBooks);
           } else {
-            fetch(`https://librarymanagement-1-nqwf.onrender.com/api/returnBook/Search?name=${searchStudent.toLocaleLowerCase()}`)
+            fetch(`https://sathish5-librarysystem.hf.space/api/returnBook/Search?name=${searchStudent.toLocaleLowerCase()}`)
               .then((res) => res.json())
               .then((data) => {
                 setReturnedBooks(data);
@@ -141,7 +141,7 @@ function ReturnBooks() {
         returnDate: formData.returnDate
       };
 
-      fetch("https://librarymanagement-1-nqwf.onrender.com/api/returnBook/userReturnBook", {
+      fetch("https://sathish5-librarysystem.hf.space/api/returnBook/userReturnBook", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

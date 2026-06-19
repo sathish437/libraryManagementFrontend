@@ -17,7 +17,7 @@ function IssueBooks() {
 
   const [bookTitles, setBookTitles] = useState([]); 
   useEffect(() => {
-    fetch("https://librarymanagement-1-nqwf.onrender.com/api/book/getAllBooks")
+    fetch("https://sathish5-librarysystem.hf.space/api/book/getAllBooks")
       .then((res) => res.json())
       .then((data) => {
         setBookTitles(data);
@@ -26,7 +26,7 @@ function IssueBooks() {
         alert("Server error while fetching books");
       });
 
-    fetch("https://librarymanagement-1-nqwf.onrender.com/api/IssueBook/AllIssueBooks")
+    fetch("https://sathish5-librarysystem.hf.space/api/IssueBook/AllIssueBooks")
       .then(res=>res.json())
       .then(data=>{
         setIssuedBooks(data);
@@ -43,7 +43,7 @@ function IssueBooks() {
       setIssuedBooks(allIssuedBooks);
     } else if(search.trim() !== "") {
       // Filter issued books by email
-      fetch(`https://librarymanagement-1-nqwf.onrender.com/api/IssueBook/searchUser?Name=${search.toLowerCase()}`)
+      fetch(`https://sathish5-librarysystem.hf.space/api/IssueBook/searchUser?Name=${search.toLowerCase()}`)
         .then(res => res.json())
         .then(data => {
           setIssuedBooks(data);
@@ -118,7 +118,7 @@ function IssueBooks() {
         issueDate: formData.issueDate,
         status: 'Issued'
       };
-      fetch("https://librarymanagement-1-nqwf.onrender.com/api/IssueBook/issueBook", {
+      fetch("https://sathish5-librarysystem.hf.space/api/IssueBook/issueBook", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -158,7 +158,7 @@ function IssueBooks() {
   // Delete a single issued book
   const handleDelete = (issueId) => {
     if (!window.confirm('Are you sure you want to delete this issued book?')) return;
-    fetch(`https://librarymanagement-1-nqwf.onrender.com/api/IssueBook/delete/${issueId}`, {
+    fetch(`https://sathish5-librarysystem.hf.space/api/IssueBook/delete/${issueId}`, {
       method: 'DELETE',
     })
       .then(async (res) => {
@@ -180,7 +180,7 @@ function IssueBooks() {
   // Delete all issued books
   const handleDeleteAll = () => {
     if (!window.confirm('Are you sure you want to delete ALL issued books? This action cannot be undone.')) return;
-    fetch('https://librarymanagement-1-nqwf.onrender.com/api/IssueBook/deleteAllIssueDatas', {
+    fetch('https://sathish5-librarysystem.hf.space/api/IssueBook/deleteAllIssueDatas', {
       method: 'DELETE',
     })
       .then(async (res) => {

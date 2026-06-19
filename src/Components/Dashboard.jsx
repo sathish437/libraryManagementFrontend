@@ -9,7 +9,7 @@ function Dashboard() {
           ReturnedBooks: 0
     });
     useEffect(() => {
-        fetch("https://librarymanagement-1-nqwf.onrender.com/api/book/getAllBooks")
+        fetch("https://sathish5-librarysystem.hf.space/api/book/getAllBooks")
             .then((response) => response.json())
             .then((data) => {
                 setBooks(data);
@@ -18,7 +18,7 @@ function Dashboard() {
                 console.error('Error fetching returned books:', error);
             });
 
-        fetch("https://librarymanagement-1-nqwf.onrender.com/api/IssueBook/AllIssueBooks")
+        fetch("https://sathish5-librarysystem.hf.space/api/IssueBook/AllIssueBooks")
             .then(res=>res.json())
             .then(data=>{
                 setValue(prevValue=>({
@@ -27,7 +27,7 @@ function Dashboard() {
                 }))
             })
 
-        fetch("https://librarymanagement-1-nqwf.onrender.com/api/returnBook/AllReturnedBooks")
+        fetch("https://sathish5-librarysystem.hf.space/api/returnBook/AllReturnedBooks")
             .then(res=>res.json())
             .then(data=>{
                 setValue(prevValue=>({

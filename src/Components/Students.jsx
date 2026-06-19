@@ -8,7 +8,7 @@ function Students() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    fetch("https://librarymanagement-1-nqwf.onrender.com/api/students/getStudents")
+    fetch("https://sathish5-librarysystem.hf.space/api/students/getStudents")
     .then((res)=>res.json())
     .then(data=>setStudents(data))
     .catch((error) => {
@@ -18,14 +18,14 @@ function Students() {
 
 useEffect(() => {
   if(searchTerm.trim()===""){
-    fetch("https://librarymanagement-1-nqwf.onrender.com/api/students/getStudents")
+    fetch("https://sathish5-librarysystem.hf.space/api/students/getStudents")
     .then((res)=>res.json())
     .then(data=>setStudents(data))
     .catch((error) => {
       alert("Server error");
     });
   }else{
-    fetch(`https://librarymanagement-1-nqwf.onrender.com/api/students/search?name=${searchTerm.toLowerCase()}`)
+    fetch(`https://sathish5-librarysystem.hf.space/api/students/search?name=${searchTerm.toLowerCase()}`)
     .then((res)=>res.json())
     .then(data=>setStudents(data))
     .catch((error) => {
@@ -35,7 +35,7 @@ useEffect(() => {
 }, [searchTerm]);
   
   const handleDelete = (id) => {
-    fetch(`https://librarymanagement-1-nqwf.onrender.com/api/students/delete/${id}`, {
+    fetch(`https://sathish5-librarysystem.hf.space/api/students/delete/${id}`, {
       method: "DELETE",
     })
     .then(async (res) => {
@@ -60,7 +60,7 @@ useEffect(() => {
   };
 
   const handleDeleteAll = () => {
-      fetch(`https://librarymanagement-1-nqwf.onrender.com/api/students/deleteAll`, {
+      fetch(`https://sathish5-librarysystem.hf.space/api/students/deleteAll`, {
       method: "DELETE",
     })
     .then(async (res) => {
